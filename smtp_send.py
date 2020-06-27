@@ -180,7 +180,7 @@ def test_reverse_mime_from_user(user, passwd, smtp_server, receiveUser):
     :return:
     """
     smtp, port = smtp_server.split(":")
-    mime_from = "\u202emoc.qq@\u202d@moxiaoxi.xyz"
+    mime_from = "\u202emoc.qq@\u202d@test.xyz"
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
     info = u"test_reverse_mime_from_user"
@@ -192,7 +192,7 @@ def test_reverse_mime_from_domain(user, passwd, smtp_server, receiveUser):
     :return:
     """
     smtp, port = smtp_server.split(":")
-    mime_from = "moxiaoxi@\u202emoxiaoxi.xyz\u202d"
+    mime_from = "test@\u202etest.xyz\u202d"
     mime_from = "\u202emoc.qq@\u202dadmin"
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
