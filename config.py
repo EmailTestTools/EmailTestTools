@@ -20,7 +20,7 @@ with open(ACCOUNT_PATH, 'r') as f:
 
 
 # The domain name to be tested
-target_domain = "target"
+target_domain = "account"
 
 account = ACCOUNTS[target_domain]
 user = account['user']
