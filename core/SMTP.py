@@ -13,7 +13,7 @@ SMTP base class
 
 
 class SendMailDealer:
-    def __init__(self, user, passwd, smtp, port, usetls=True, debug_level=3,filename=None):
+    def __init__(self, user, passwd, smtp, port, usetls=True, debug_level=0,filename=None):
         self.mailUser = user
         self.mailPassword = passwd
         self.smtpServer = smtp
@@ -122,9 +122,9 @@ class SendMailDealer:
                 method=self.method, mime_from=mime_from, to_email=to_email, info=info, mail_from=mail_from,
                 sender=sender, return_path=return_path)
         mime_headers = self.msg.as_string()
-        # content += '\r\n' + '-' * 100 + '\r\n' + mime_headers
-        # _attach = MIMEText(content)
-        _attach = MIMEText(content, 'html', 'utf-8')
+        content += '\r\n' + '-' * 100 + '\r\n' + mime_headers
+        _attach = MIMEText(content)
+        # _attach = MIMEText(content, 'html', 'utf-8')
         self.msg.attach(_attach)
         if image:
             fp = open("./uploads/"+image, 'rb')
@@ -137,11 +137,11 @@ class SendMailDealer:
             att1["Content-Type"] = 'application/octet-stream'
             att1["Content-Disposition"] = 'attachment; filename="{}"'.format(self.filename)
             self.msg.attach(att1)
-        logger.debug("-" * 50)
-        logger.debug(self.msg.as_string())
-        logger.debug("-" * 50)
+        # logger.debug("-" * 50)
+        # logger.debug(self.msg.as_string())
+        # logger.debug("-" * 50)
         self.mailServer.sendmail(mail_from, to_email, self.msg.as_string())
-        logger.debug('Sent email to %s' % self.msg['To'])
+        # logger.debug('Sent email to %s' % self.msg['To'])
 
 
 class ReceiveMailDealer:

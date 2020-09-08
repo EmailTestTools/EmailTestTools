@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import os, json
-from util.util import init_log,banner
+from util.util import init_log, banner
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = BASE_DIR + '/log/run.log'
@@ -17,8 +17,6 @@ with open(RULE_PATH, 'r') as f:
 with open(ACCOUNT_PATH, 'r') as f:
     ACCOUNTS = json.load(f)
 
-
-
 # The domain name to be tested
 target_domain = "gmail.com"
 
@@ -27,20 +25,19 @@ user = account['user']
 passwd = account['apipass']
 smtp_server = account['smtp_server']
 
+# Change receiveUser to what you like to test.
 receiveUser = "xxx@gmail.com"
-#Change receiveUser to what you like to test.
 
-
+# Some default values in Direct MTA Attack
+mail_from = 'xxx@test.com'
+mime_from = 'xxx@test.com'
+reply_to = mime_from
+sender = "xxx@test.com"
+to_email = 'xxx@gmail.com'
 subject = 'This is subject'
 content = """This is content"""
+helo = 'test.com'
 filename = None
 image = None
 
-
-
-
-
-
-
-
-
+#
