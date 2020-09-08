@@ -22,7 +22,7 @@ def sleep():
 def MTA_mail_from_test():
     with open(FUZZ_PATH, 'r') as f:
         data = json.load(f)
-    to_email = recvUser
+    to_email = receiveUser
     for m in data:
         mail_from = m
         spoof(mail_from=mail_from, to_email=to_email, mime_from=mime_from, subject=subject,
@@ -34,7 +34,7 @@ def MTA_mail_from_test():
 def MTA_mime_from_test():
     with open(FUZZ_PATH, 'r') as f:
         data = json.load(f)
-    to_email = recvUser
+    to_email = receiveUser
     for m in data:
         mime_from = m
         spoof(mail_from=mail_from, to_email=to_email, mime_from=mime_from, subject=subject,
@@ -46,7 +46,7 @@ def MTA_mime_from_test():
 def SMTP_mail_from_test():
     with open(FUZZ_PATH, 'r') as f:
         data = json.load(f)
-    to_email = recvUser
+    to_email = receiveUser
     for m in data:
         mail_from = m
         try:
@@ -61,7 +61,7 @@ def SMTP_mail_from_test():
 def SMTP_mime_from_test():
     with open(FUZZ_PATH, 'r') as f:
         data = json.load(f)
-    to_email = recvUser
+    to_email = receiveUser
     for m in data:
         mime_from = m
         try:
@@ -76,7 +76,7 @@ def SMTP_mime_from_test():
 def parse_options():
     parser = OptionParser()
     parser.add_option("-m", "--mode", dest="mode", default="SMTP",
-                      help="The attack mode with spoofing emails(SMTP/MTA)")
+                      help="The attack mode with spoofing emails( SMTP: Shared MTA, MTA: Direct MTA)")
     parser.add_option("-t", "--target", dest="target", default="MIME", help="The target field to test.")
     (options, args) = parser.parse_args()
     return options
