@@ -236,7 +236,7 @@ if __name__ == '__main__':
     """
     test_normal(user, passwd, smtp_server, receiveUser,subject,content,mime_from=None,filename=filename,mime_from1=None,mime_from2=None,mail_from=None,image=image)
     test_mail_mime_attack(user, passwd, smtp_server, receiveUser)
-    test_login_mail_attack(user, passwd, smtp_server, receiverUser)
+    test_login_mail_attack(user, passwd, smtp_server, receiveUser)
     special_unicode = '\xff'
     test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser,special_unicode)
     test_multiple_mime_from1(user, passwd, smtp_server, receiveUser)
