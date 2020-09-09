@@ -168,7 +168,7 @@ You can see that some spoofing emails have entered the inbox of the target email
 
 
 
-You can get more information by reading the body of the email, including details of the attack and how to fix such vulnerabilities.
+You can get more information by reading the content of the email, including details of the attack and how to fix such vulnerabilities.
 
 ![img/demo.png](img/demo.png)
 
