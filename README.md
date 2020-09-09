@@ -160,6 +160,16 @@ content = """This is content"""
 helo = 'test.com'
 ```
 
+The following is an example of using this tool to evaluate the security of the Coremail email system.
+
+You can see that some forged emails have entered the inbox of the Coremail email system:
+
+![list.png](img/list.png)
+
+You can read the email and see the details of the attack and how to fix it:
+
+![img/demo.png](img/demo.png)
+
 ## Version
 
 Current version is 1.2

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#coding:utf8
+# coding:utf8
 
 from util import smtplib
 from struct import pack
@@ -19,17 +19,43 @@ RSTR = list(map(lambda x: x.encode(), rstr))  # str --> byte
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = BASE_DIR + '/log/smtp.log'
 logger = init_log(LOG_FILE)
-        
+
+template = """---
+
+INFO:
+
+This is an evaluation email sent by EmailTestTool to help email administrators to evaluate and strengthen their security. 
+
+If you see this email, it means that you may are vulnerable to the email spoofing attacks.
+
+This email uses the {attack_name}({number}).
+
+----------------------------------------------------------------------------------------------------
+
+How to fix it:
+
+For the IDN {attack_name}({number}): {defense}
+
+----------------------------------------------------------------------------------------------------
+
+More Details：
+
+More email header details are provided to help you to configure the corresponding email filtering strategy.
+
+"""
+
 
 def is_bad(s):
     return s not in RSTR
 
-def test_normal(user, passwd, smtp_server, receiveUser,subject,content,
-    filename=None,mime_from1=None,mime_from2=None,mail_from=None,image=None,mime_from=None):
+
+def test_normal(user, passwd, smtp_server, receiveUser, subject, content,
+                filename=None, mime_from1=None, mime_from2=None, mail_from=None, image=None, mime_from=None):
     smtp, port = smtp_server.split(":")
-    print(user, passwd, smtp, port, receiveUser,mime_from,subject,content,filename,mime_from1,mime_from2)
-    demo = SendMailDealer(user, passwd, smtp, port,filename=filename)
-    demo.sendMail(receiveUser,mime_from=mime_from,subject=subject,content=content,mime_from1=mime_from1,mime_from2=mime_from2,mail_from=mail_from,image=image)
+    print(user, passwd, smtp, port, receiveUser, mime_from, subject, content, filename, mime_from1, mime_from2)
+    demo = SendMailDealer(user, passwd, smtp, port, filename=filename)
+    demo.sendMail(receiveUser, mime_from=mime_from, subject=subject, content=content, mime_from1=mime_from1,
+                  mime_from2=mime_from2, mail_from=mail_from, image=image)
 
 
 def test_mail_mime_attack(user, passwd, smtp_server, receiveUser):
@@ -40,11 +66,16 @@ def test_mail_mime_attack(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_mail_mime_attack"
+    info = u"The Inconsistency between Mail From and From headers"
+    number = "A2"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
     domain = user.split('@')[1]
-    mime_from = 'admin@' + domain
     # mime_from can specify any value you like.
-    demo.sendMail(to_email=to_email, info=info, mime_from=mime_from,subject=info)
+    mime_from = 'admin@' + domain
+    defense = '''You should Add a reminder to remind users that the sender is inconsistent with MAIL FROM on UI.'''
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email=to_email, info=info, mime_from=mime_from, subject=subject, content=content)
+
 
 def test_login_mail_attack(user, passwd, smtp_server, receiverUser):
     """
@@ -53,11 +84,12 @@ def test_login_mail_attack(user, passwd, smtp_server, receiverUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiverUser
-    info = u"test_login_mail_attack"
+    info = u"The Inconsistency between Auth username and Mail From headers"
     domain = user.split('@')[1]
     mail_from = 'adm1n@' + domain
+    defense = 'Prohibit sending such emails! '
     try:
-        demo.sendMail(to_email=to_email, info=info, mail_from=mail_from,subject=info)
+        demo.sendMail(to_email=to_email, info=info, mail_from=mail_from, subject=info, defense=defense)
     except Exception as e:
         logger.error(e)
         logger.info("attack failed.")
@@ -65,7 +97,8 @@ def test_login_mail_attack(user, passwd, smtp_server, receiverUser):
     logger.info("attack success!")
     return True
 
-def test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser,special_unicode):
+
+def test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser, special_unicode='\xff'):
     """
     Test whether the smtp server supports different unicode in MIME FROM header
     :return:
@@ -73,13 +106,16 @@ def test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser,special_u
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_mail_mime_xff_attack"
+    info = u"Missing UI Rendering Attack"
+    number  = "A13"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
     domain = user.split('@')[1]
     username = user.split('@')[0]
-    special_unicode = '\xff'
-    mime_from = username+special_unicode+'@'+domain
-    # You can also try other types here. Such as "emailtest{}test@emailtest.com".format(special_unicode)...
-    demo.sendMail(to_email, info=info, mime_from=mime_from)
+    defense = 'You should reject emails which contains special and not allowed characters in the sender address or add a warning in the UI.'
+    mime_from = username + special_unicode + '@' + domain
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=mime_from, defense=defense,subject=subject,content=content)
+
 
 def test_multiple_mime_from1(user, passwd, smtp_server, receiveUser):
     """
@@ -89,11 +125,15 @@ def test_multiple_mime_from1(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_multiple_mime_from1"
+    info = u"Multiple From Headers Attack"
+    number = "A4"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
     domain = user.split('@')[1]
     mime_from1 = 'admin@' + domain
-    # mime_from1 can specify any value you like.
-    demo.sendMail(to_email, info=info,mime_from=user, mime_from1=mime_from1)
+    defense = '''You should reject such emails which contain multiple from headers.'''
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=user, mime_from1=mime_from1,defense=defense,subject=subject,content=content)
+
 
 def test_multiple_mime_from2(user, passwd, smtp_server, receiveUser):
     """
@@ -103,11 +143,16 @@ def test_multiple_mime_from2(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_multiple_mime_from2"
+    info = u"Multiple From Headers Attack"
+    number = "A4"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
     domain = user.split('@')[1]
-    mime_from2 = 'admin@' + domain
     # mime_from2 can specify any value you like.
-    demo.sendMail(to_email, info=info,mime_from=user, mime_from2=mime_from2)
+    mime_from2 = 'admin@' + domain
+    defense = '''You should reject such emails which contain multiple from headers.'''
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=user, mime_from2=mime_from2, defense=defense,subject=subject,content=content)
+
 
 def test_multiple_value_mime_from1(user, passwd, smtp_server, receiveUser):
     """
@@ -117,12 +162,17 @@ def test_multiple_value_mime_from1(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_multiple_value_mime_from1"
+    info = u"Multiple Email Addresses Attack"
+    number = "A5"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
     domain = user.split('@')[1]
     front_mime_from = 'admin@' + domain
-    mime_from = front_mime_from+','+user
     # mime_from can specify in many different situations such like '<a@a.com>,<b@a.com>','a<a@a.com>,b<b@a.com>',"'a@a.com','b@b.com'" ...
-    demo.sendMail(to_email, mime_from=mime_from, info=info)
+    mime_from = front_mime_from + ',' + user
+    defense = '''You should display all sender addresses and remind users that it may be forged emails on UI.'''
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email,subject=subject,mime_from=mime_from, info=info, content=content)
+
 
 def test_multiple_value_mime_from2(user, passwd, smtp_server, receiveUser):
     """
@@ -132,12 +182,17 @@ def test_multiple_value_mime_from2(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_multiple_value_mime_from2"
+    info = u"Multiple Email Addresses Attack"
+    number = "A5"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
     domain = user.split('@')[1]
     back_mime_from = 'admin@' + domain
-    mime_from = user+','+back_mime_from
     # mime_from can specify in many different situations such like '<a@a.com>,<b@a.com>','a<a@a.com>,b<b@a.com>',"'a@a.com','b@b.com'" ...
-    demo.sendMail(to_email, mime_from=mime_from, info=info)
+    mime_from = user + ',' + back_mime_from
+    defense = '''You should display all sender addresses and remind users that it may be forged emails on UI.'''
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email,subject=subject,mime_from=mime_from, info=info, content=content)
+
 
 def test_multiple_value_mime_to(user, passwd, smtp_server, receiveUser):
     """
@@ -147,12 +202,13 @@ def test_multiple_value_mime_to(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_multiple_value_mime_to"
+    info = u"Test multiple addresses in 'to' filed"
     domain = user.split('@')[1]
     new_mime_to = 'admin@' + domain
-    to = user+','+new_mime_to
+    to = user + ',' + new_mime_to
     # MIME TO header can be specified and tested like MIME FROM header
     demo.sendMail(to_email, mime_from=user, info=info, to=to)
+
 
 def test_mime_to(user, passwd, smtp_server, receiveUser):
     """
@@ -162,10 +218,11 @@ def test_mime_to(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_mime_to"
+    info = u"Test mime to"
     domain = user.split('@')[1]
     to = 'admin@' + domain
     demo.sendMail(to_email, mime_from=user, info=info, to=to)
+
 
 def test_IDN_mime_from_domain(user, passwd, smtp_server, receiveUser):
     """
@@ -174,10 +231,14 @@ def test_IDN_mime_from_domain(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_IDN_mime_from_domain"
-    username = user.split('@')[0]
-    mime_from = username + "@xn--80aa1cn6g67a.com"
-    demo.sendMail(to_email, info=info, mime_from=mime_from)
+    info = u"IDN Homograph Attack"
+    number = "A12"
+    subject = "[Warning] Maybe you are vulnerable to the A12 attack!"
+    # username = user.split('@')[0]
+    mime_from = "admin" + "@xn--80aa1cn6g67a.com"
+    defense = "You can only display the original address with  Punycode character, if a domain label contains characters from multiple different languages."
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=mime_from, subject=subject, content=content)
 
 
 def test_IDN_mime_from_username(user, passwd, smtp_server, receiveUser):
@@ -188,10 +249,14 @@ def test_IDN_mime_from_username(user, passwd, smtp_server, receiveUser):
     smtp, port = smtp_server.split(":")
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_IDN_mime_from_username"
+    info = u"IDN Homograph Attack"
+    number = "A12"
+    subject = "[Warning] Maybe you are vulnerable to the A12 attack!"
     domain = user.split('@')[1]
     mime_from = 'xn--80aa1cn6g67a@' + domain
-    demo.sendMail(to_email, info=info, mime_from=mime_from)
+    defense = "You can only display the original address with  Punycode character, if a domain label contains characters from multiple different languages."
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=mime_from, subject=subject, content=content)
 
 
 def test_reverse_mime_from_user(user, passwd, smtp_server, receiveUser):
@@ -200,11 +265,16 @@ def test_reverse_mime_from_user(user, passwd, smtp_server, receiveUser):
     :return:
     """
     smtp, port = smtp_server.split(":")
-    mime_from = "\u202emoc.qq@\u202d@test.xyz"
+    mime_from = "\u202emoc.qq@\u202d@test.com"
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_reverse_mime_from_user"
-    demo.sendMail(to_email, info=info, mime_from=mime_from)
+    info = u"Right-to-left Override Attack"
+    number = "A14"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
+    defense = 'You should reject emails which contain these special characters in the sender address or add a warning on UI.'
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=mime_from, subject=subject, content=content)
+
 
 def test_reverse_mime_from_domain(user, passwd, smtp_server, receiveUser):
     """
@@ -212,15 +282,18 @@ def test_reverse_mime_from_domain(user, passwd, smtp_server, receiveUser):
     :return:
     """
     smtp, port = smtp_server.split(":")
-    mime_from = "test@\u202etest.xyz\u202d"
+    mime_from = "test@\u202etest.com\u202d"
     demo = SendMailDealer(user, passwd, smtp, port)
     to_email = receiveUser
-    info = u"test_reverse_mime_from_domain"
-    demo.sendMail(to_email, info=info, mime_from=mime_from)
+    info = u"Right-to-left Override Attack"
+    number = "A14"
+    subject = "[Warning] Maybe you are vulnerable to the %s attack!" % number
+    defense = 'You should reject emails which contain these special characters in the sender address or add a warning on UI.'
+    content = template.format(attack_name=info, number=number, defense=defense)
+    demo.sendMail(to_email, info=info, mime_from=mime_from, subject=subject, content=content)
 
 
 if __name__ == '__main__':
-
     """
     Send normal smtp email to receiveUser
     :param user:
@@ -234,40 +307,19 @@ if __name__ == '__main__':
     Other parameters like mail_from,mime_from,mime_from1,mime_from2 can be specified if smtp server allow.
     :return:
     """
-    test_normal(user, passwd, smtp_server, receiveUser,subject,content,mime_from=None,filename=filename,mime_from1=None,mime_from2=None,mail_from=None,image=image)
-    test_mail_mime_attack(user, passwd, smtp_server, receiveUser)
-    test_login_mail_attack(user, passwd, smtp_server, receiveUser)
-    special_unicode = '\xff'
-    test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser,special_unicode)
-    test_multiple_mime_from1(user, passwd, smtp_server, receiveUser)
-    test_multiple_mime_from2(user, passwd, smtp_server, receiveUser)
-    test_multiple_value_mime_from1(user, passwd, smtp_server, receiveUser)
-    test_multiple_value_mime_from2(user, passwd, smtp_server, receiveUser)
-    test_multiple_value_mime_to(user, passwd, smtp_server, receiveUser)
-    test_mime_to(user, passwd, smtp_server, receiveUser)
+    # test_normal(user, passwd, smtp_server, receiveUser, subject, content, mime_from=None, filename=filename,
+    #             mime_from1=None, mime_from2=None, mail_from=None, image=image)
+    # test_mail_mime_attack(user, passwd, smtp_server, receiveUser)
+    # test_login_mail_attack(user, passwd, smtp_server, receiveUser)
+    # special_unicode = '\xff'
+    # test_mail_mime_chars_attack(user, passwd, smtp_server, receiveUser, special_unicode)
+    # test_multiple_mime_from1(user, passwd, smtp_server, receiveUser)
+    # test_multiple_mime_from2(user, passwd, smtp_server, receiveUser)
+    # test_multiple_value_mime_from1(user, passwd, smtp_server, receiveUser)
+    # test_multiple_value_mime_from2(user, passwd, smtp_server, receiveUser)
+    # test_multiple_value_mime_to(user, passwd, smtp_server, receiveUser)
+    # test_mime_to(user, passwd, smtp_server, receiveUser)
     test_IDN_mime_from_domain(user, passwd, smtp_server, receiveUser)
-    test_IDN_mime_from_username(user, passwd, smtp_server, receiveUser)
-    test_reverse_mime_from_user(user, passwd, smtp_server, receiveUser)
-    test_reverse_mime_from_domain(user, passwd, smtp_server, receiveUser)
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # test_IDN_mime_from_username(user, passwd, smtp_server, receiveUser)
+    # test_reverse_mime_from_user(user, passwd, smtp_server, receiveUser)
+    # test_reverse_mime_from_domain(user, passwd, smtp_server, receiveUser)

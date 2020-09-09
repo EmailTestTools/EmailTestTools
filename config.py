@@ -29,11 +29,11 @@ smtp_server = account['smtp_server']
 receiveUser = "xxx@gmail.com"
 
 # Some default values in Direct MTA Attack
-mail_from = 'xxx@test.com'
-mime_from = 'xxx@test.com'
+mail_from = 'test@test.com'
+mime_from = 'test@test.com'
 reply_to = mime_from
-sender = "xxx@test.com"
-to_email = 'xxx@gmail.com'
+sender = "test@test.com"
+to_email = receiveUser
 subject = 'This is subject'
 content = """This is content"""
 helo = 'test.com'

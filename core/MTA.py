@@ -57,7 +57,7 @@ def spoof(mail_from, to_email, subject, content, mime_from=None, mime_from1=None
         logger.warn("Invalid TO domain: " + to_email)
 
     mx_domain = get_mx(to_domain)
-    print("mx_domain:",mx_domain)
+    # print("mx_domain:",mx_domain)
     # print("666")
     if mx_domain is None:
         logger.warn("Can't not resolve mx: " + to_domain)
@@ -91,13 +91,13 @@ def spoof(mail_from, to_email, subject, content, mime_from=None, mime_from1=None
     subject = Header(subject, "UTF-8").encode()
     smtp.cmdonly("Subject: {}".format(subject))
 
-    # msg['Date'] = t
-    # msg['From'] = mime_from
-    # msg['To'] = to_email
-    # msg['Subject'] = subject
-    # smtp.cmdonly('Content-Type: text/plain; charset="utf-8"')
-    # smtp.cmdonly("MIME-Version: 1.0")
-    _attach = MIMEText(content, 'html', 'utf-8')
+    msg['Date'] = t
+    msg['From'] = mime_from
+    msg['To'] = to_email
+    msg['Subject'] = subject
+    smtp.cmdonly('Content-Type: text/plain; charset="utf-8"')
+    smtp.cmdonly("MIME-Version: 1.0")
+    _attach = MIMEText(content, 'utf-8')
     msg.attach(_attach)
     if filename:
         att1 = MIMEText(open('./uploads/'+filename, 'rb').read(), 'base64', 'utf-8')

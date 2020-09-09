@@ -13,14 +13,14 @@ SMTP base class
 
 
 class SendMailDealer:
-    def __init__(self, user, passwd, smtp, port, usetls=True, debug_level=0,filename=None):
+    def __init__(self, user, passwd, smtp, port, usetls=True, debug_level=0, filename=None):
         self.mailUser = user
         self.mailPassword = passwd
         self.smtpServer = smtp
         self.smtpPort = int(port)
         if self.smtpPort not in [25]:
             self.useSSL = True
-            self.mailServer = smtplib.SMTP_SSL(self.smtpServer,self.smtpPort)
+            self.mailServer = smtplib.SMTP_SSL(self.smtpServer, self.smtpPort)
         else:
             self.useSSL = False
             self.mailServer = smtplib.SMTP(self.smtpServer, self.smtpPort)
@@ -29,7 +29,6 @@ class SendMailDealer:
         self.method = 'SMTP'
         self.filename = filename
         self.mail_init()
-
 
     def __del__(self):
         try:
@@ -60,7 +59,8 @@ class SendMailDealer:
         self.msg.attach(part)
 
     def sendMail(self, to_email, info=None, subject=None, content=None, mail_from=None, mime_from=None, reply_to=None,
-                 return_path=None, sender=None, ehlo=None,to=None, mime_from1=None,mime_from2=None,image=None,**headers):
+                 return_path=None, sender=None, ehlo=None, to=None, mime_from1=None, mime_from2=None, image=None,
+                 defense=None, **headers):
         """
         :param to_email: 
         :param info: 
@@ -93,10 +93,10 @@ class SendMailDealer:
         #     self.msg['From'] = mime_from
         if mime_from1:
             self.msg['From'] = mime_from1
-            self.msg.add_header('From',mime_from)
+            self.msg.add_header('From', mime_from)
         elif mime_from2:
             self.msg['From'] = mime_from
-            self.msg.add_header('From',mime_from2)
+            self.msg.add_header('From', mime_from2)
         else:
             self.msg['From'] = mime_from
         # else:
@@ -117,23 +117,39 @@ class SendMailDealer:
             self.msg['Reply'] = reply_to
         if sender is not None:
             self.msg['Sender'] = sender
-        if content is None:
-            content = """[{method} {info}] {mime_from} --> {to_email} \r\nEnvelope.From: {mail_from}\nMIME.From: {mime_from}\nSender: {sender}\nReturn path: {return_path}\n""".format(
-                method=self.method, mime_from=mime_from, to_email=to_email, info=info, mail_from=mail_from,
-                sender=sender, return_path=return_path)
+        # if content is None:
+        #     content = "-" * 100 + "\r\n"
+        #     content += """If you see this email, it means that you may be affected by email spoofing attacks.\n"""
+        #     content += """This email uses '{}' to attack.""".format(info)
+        #     content = """[{method} {info}] {mime_from} --> {to_email} \r\n""".format(method=self.method,
+        #                                                                              mime_from=mime_from,
+        #                                                                              to_email=to_email, info=info)
+        # if defense:
+        #     content += '\r\n' + '-' * 100 + '\r\n'
+        #     content += '''Defense measures: {defense}\n'''.format(defense=defense)
+        # content += "-" * 100 + "\r\n"
+        # content += """Email headers information:\r\nEnvelope.From: {mail_from}\nMIME.From: {mime_from}\nSender: {sender}\nReturn path: {return_path}""".format(
+        #         mail_from=mail_from, sender=sender, return_path=return_path, mime_from=mime_from)
         mime_headers = self.msg.as_string()
-        content += '\r\n' + '-' * 100 + '\r\n' + mime_headers
+        index = mime_headers.find("--=======")
+        mime_headers = mime_headers[:index].strip()
+        mime_headers = """MAIL From: {mail_from}\n""".format(mail_from=mail_from) + mime_headers
+        mime_headers = mime_headers.replace("\n","\n\n")
+        mime_headers += "\r\n\r\n" + "-" * 100 + "\r\n"
+        content += mime_headers
+        # logger.debug(mime_headers)
+
         _attach = MIMEText(content)
         # _attach = MIMEText(content, 'html', 'utf-8')
         self.msg.attach(_attach)
         if image:
-            fp = open("./uploads/"+image, 'rb')
+            fp = open("./uploads/" + image, 'rb')
             images = MIMEImage(fp.read())
             fp.close()
             images.add_header('Content-ID', '<image1>')
             self.msg.attach(images)
         if self.filename:
-            att1 = MIMEText(open('./uploads/'+self.filename, 'rb').read(), 'base64', 'utf-8')
+            att1 = MIMEText(open('./uploads/' + self.filename, 'rb').read(), 'base64', 'utf-8')
             att1["Content-Type"] = 'application/octet-stream'
             att1["Content-Disposition"] = 'attachment; filename="{}"'.format(self.filename)
             self.msg.attach(att1)
