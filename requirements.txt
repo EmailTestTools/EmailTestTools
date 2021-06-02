@@ -21,7 +21,7 @@ scapy==2.4.3
 six==1.12.0
 treelib==1.6.1
 typed-ast==1.4.0
-urllib3==1.25.6
+urllib3==1.26.5
 wrapt==1.11.1
 yara==1.7.7
 yara-python==3.11.0
